@@ -52,7 +52,7 @@ fn main() -> io::Result<()> {
     let mut num_cons = 0;
     let mut num_bcons = 0;
 
-    let mut infeas = "";
+    let mut infease = false;
     let mut lb = "";
     let mut ub = "";
     let mut list_sols = Vec::new();
@@ -128,8 +128,9 @@ fn main() -> io::Result<()> {
             "RTP" => {
                 let s = content_iter.next().unwrap();
                 if s == "infeas" {
-                    infeas = s;
+                    infease = true;
                 } else {
+                    infease = false;
                     lb = content_iter.next().unwrap();
                     ub = content_iter.next().unwrap();
                     if (obj_func.sense == "min" && lb == "-inf")
@@ -142,7 +143,7 @@ fn main() -> io::Result<()> {
             }
             "SOL" => {
                 let num_sol = content_iter.next().unwrap().parse::<usize>().unwrap();
-                if (num_sol == 0 && infeas != "infeas") || (num_sol > 0 && infeas == "infeas") {
+                if (num_sol == 0 && infease == false) || (num_sol > 0 && infease == true) {
                     println!("error in sol");
                     exit(0);
                 }
@@ -228,7 +229,7 @@ fn main() -> io::Result<()> {
                             &obj_func.terms,
                             &der_ind,
                             obj_func.sense.clone(),
-                            infeas != "infeas",
+                            infease,
                             &mut fout,
                             lb,
                             ub,

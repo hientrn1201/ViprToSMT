@@ -26,12 +26,12 @@ pub fn handle_last_cons(
     objcoe: &HashSet<usize>,
     i: &usize,
     objsense: String,
-    feas: bool,
+    infease: bool,
     mut fout: &File,
     lb: &str,
     ub: &str,
 ) -> io::Result<()> {
-    if feas {
+    if !infease {
         if objsense == "min" {
             dom_cons(
                 terms,
