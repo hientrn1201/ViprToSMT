@@ -367,15 +367,13 @@ fn main() -> io::Result<()> {
                             if reason == "rnd" {
                                 writeln!(
                                     &mut fout,
-                                    "(assert (or (= rs{} -1.0) (= rs{} 1.0))",
+                                    "(assert (or (= rs{} -1.0) (= rs{} 1.0)))",
                                     der_ind, der_ind
                                 )?;
                                 writeln!(&mut fout, "(declare-fun rndbeta{} () Int)", der_ind)?;
                                 writeln!(
                                     &mut fout,
-                                    "(assert (ite (= rs{} -1.0) (and (<= (to real rndbeta{}) beta{}) 
-                                        (> (to real (+ rndbeta{} 1)) beta{})) (and (>= (to real
-                                        rndbeta{}) beta{}) (< (to real (- rndbeta{} 1)) beta{}))))",
+                                    "(assert (ite (= rs{} -1.0) (and (<= (to real rndbeta{}) beta{}) (> (to real (+ rndbeta{} 1)) beta{})) (and (>= (to real rndbeta{}) beta{}) (< (to real (- rndbeta{} 1)) beta{}))))",
                                     der_ind, der_ind, der_ind, der_ind, der_ind, der_ind, der_ind, der_ind, der_ind
                                 )?;
                                 writeln!(&mut fout, "(declare-fun brndbeta{} () Real)", der_ind)?;
@@ -500,6 +498,8 @@ fn main() -> io::Result<()> {
             }
         }
     }
+    writeln!(&mut fout, "(check-sat)")?;
+    writeln!(&mut fout, "(exit)")?;
 
     Ok(())
 }
