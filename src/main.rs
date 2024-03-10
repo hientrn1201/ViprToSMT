@@ -1,11 +1,13 @@
 mod cons_helper;
 mod convert;
+mod normalize;
 
 use cons_helper::{clean_up_cons, dom_cons, handle_last_cons, parse_cons};
 use convert::{convert_sense_to_sign, convert_to_real};
+use normalize::normalize;
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
-use std::io::{self, Read, Write};
+use std::io::{self, BufRead, BufReader, Read, Write};
 use std::process::exit;
 
 #[derive(Debug)]
@@ -15,7 +17,13 @@ struct Relation {
 }
 
 fn main() -> io::Result<()> {
-    println!("Enter a name:");
+    println!("normalize negative number? (y/n)");
+    let mut is_normalize = String::new();
+    io::stdin()
+        .read_line(&mut is_normalize)
+        .expect("failed to readline");
+    let is_normalize = is_normalize.trim() == "y";
+    println!("Enter a filename:");
     let mut file_path = String::new();
 
     io::stdin()
@@ -500,6 +508,9 @@ fn main() -> io::Result<()> {
     }
     writeln!(&mut fout, "(check-sat)")?;
     writeln!(&mut fout, "(exit)")?;
+    if is_normalize {
+        normalize(&outfile)?;
+    }
 
     Ok(())
 }
