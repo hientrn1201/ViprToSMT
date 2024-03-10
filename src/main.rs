@@ -6,6 +6,7 @@ use cons_helper::{clean_up_cons, dom_cons, handle_last_cons, parse_cons};
 use convert::{convert_sense_to_sign, convert_to_real};
 use normalize::normalize;
 use std::collections::{HashMap, HashSet};
+use std::fmt::write;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Read, Write};
 use std::process::exit;
@@ -191,7 +192,7 @@ fn main() -> io::Result<()> {
                 // make sure at least one solution is above the lower bound if max problem and vice versa
                 writeln!(
                     &mut fout,
-                    "(assert (or {} xfalse))",
+                    "(assert (or {} xtrue))",
                     list_sols
                         .iter()
                         .enumerate()
@@ -331,7 +332,7 @@ fn main() -> io::Result<()> {
                                     )?;
                                     writeln!(
                                         &mut fout,
-                                        "(assert (ite is_intx{} (= (to real rndr{}x{}) r{}x{}) (= r{}x{} 0.0)))",
+                                        "(assert (ite is_intx{} (= (to_real rndr{}x{}) r{}x{}) (= r{}x{} 0.0)))",
                                         used_con_term, der_ind, used_con_term, der_ind, used_con_term, der_ind, used_con_term
                                     )?;
                                 }
@@ -342,10 +343,9 @@ fn main() -> io::Result<()> {
                                 writeln!(&mut fout, "(declare-fun {}{} () Bool)", var, der_ind)?;
                                 writeln!(
                                     &mut fout,
-                                    "(assert (= {}{} (and ({} {}))))",
+                                    "(assert (= {}{} (and {})))",
                                     var,
                                     der_ind,
-                                    sign,
                                     used_cons
                                         .iter()
                                         .map(|(ind, coeff)| format!(
@@ -357,7 +357,11 @@ fn main() -> io::Result<()> {
                                 )?;
                             }
                             writeln!(&mut fout, "(declare-fun rs{} () Real)", der_ind)?;
-
+                            writeln!(
+                                &mut fout,
+                                "(assert (ite ceq{} (= rs{} 0.0) (ite cleq{} (= rs{} (- 1.0)) (ite cgeq{} (= rs{} 1.0) xfalse))))",
+                                der_ind, der_ind, der_ind, der_ind, der_ind, der_ind
+                            )?;
                             writeln!(&mut fout, "(declare-fun beta{} () Real)", der_ind)?;
                             writeln!(
                                 &mut fout,
@@ -381,13 +385,13 @@ fn main() -> io::Result<()> {
                                 writeln!(&mut fout, "(declare-fun rndbeta{} () Int)", der_ind)?;
                                 writeln!(
                                     &mut fout,
-                                    "(assert (ite (= rs{} -1.0) (and (<= (to real rndbeta{}) beta{}) (> (to real (+ rndbeta{} 1)) beta{})) (and (>= (to real rndbeta{}) beta{}) (< (to real (- rndbeta{} 1)) beta{}))))",
+                                    "(assert (ite (= rs{} -1.0) (and (<= (to_real rndbeta{}) beta{}) (> (to_real (+ rndbeta{} 1)) beta{})) (and (>= (to_real rndbeta{}) beta{}) (< (to_real (- rndbeta{} 1)) beta{}))))",
                                     der_ind, der_ind, der_ind, der_ind, der_ind, der_ind, der_ind, der_ind, der_ind
                                 )?;
                                 writeln!(&mut fout, "(declare-fun brndbeta{} () Real)", der_ind)?;
                                 writeln!(
                                     &mut fout,
-                                    "(assert (= brndbeta{} (to real rndbeta{})))",
+                                    "(assert (= brndbeta{} (to_real rndbeta{})))",
                                     der_ind, der_ind
                                 )?;
                             }
@@ -435,7 +439,7 @@ fn main() -> io::Result<()> {
                             }
                             used_asm.insert(der_ind, new_used_asm_set);
                             for i in [i1, l1, i2, l2].iter() {
-                                writeln!(&mut fout, "(assert ({}.0 < {}.0))", i, der_ind)?;
+                                writeln!(&mut fout, "(assert (< {}.0 {}.0))", i, der_ind)?;
                             }
                             dom_cons(
                                 &constraints.get(&i2).unwrap().terms,

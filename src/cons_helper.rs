@@ -156,11 +156,11 @@ pub fn parse_cons(
         cons.terms = obj_func.terms.clone();
     } else {
         let num_terms = num_terms.parse::<usize>().unwrap();
-        for ind in 0..num_terms {
+        for _ in 0..num_terms {
             let var_index = content_iter.next().unwrap().parse::<usize>().unwrap();
             let var_coeff = convert_to_real(content_iter.next().unwrap());
-            writeln!(&mut fout, "(declare-fun c{}x{} () Real)", i, ind)?;
-            writeln!(&mut fout, "(assert (= c{}x{} {}))", i, ind, var_coeff)?;
+            writeln!(&mut fout, "(declare-fun c{}x{} () Real)", i, var_index)?;
+            writeln!(&mut fout, "(assert (= c{}x{} {}))", i, var_index, var_coeff)?;
             cons.terms.insert(var_index);
         }
     }
