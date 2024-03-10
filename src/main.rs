@@ -6,9 +6,8 @@ use cons_helper::{clean_up_cons, dom_cons, handle_last_cons, parse_cons};
 use convert::{convert_sense_to_sign, convert_to_real};
 use normalize::normalize;
 use std::collections::{HashMap, HashSet};
-use std::fmt::write;
 use std::fs::File;
-use std::io::{self, BufRead, BufReader, Read, Write};
+use std::io::{self, Read, Write};
 use std::process::exit;
 
 #[derive(Debug)]
@@ -58,8 +57,8 @@ fn main() -> io::Result<()> {
         sense: "".to_string(),
         terms: HashSet::new(),
     };
-    let mut num_cons = 0;
-    let mut num_bcons = 0;
+    // let mut num_cons = 0;
+    // let mut num_bcons = 0;
 
     let mut infease = false;
     let mut lb = "";
@@ -88,14 +87,13 @@ fn main() -> io::Result<()> {
         .flat_map(|line| line.split_whitespace())
         .collect();
 
-    // Iterate over numbers and print them
     let mut content_iter = contents.into_iter();
     while let Some(string) = content_iter.next() {
         match string {
             "VAR" => {
                 let num_vars = content_iter.next().unwrap().parse::<usize>().unwrap();
                 for _ in 0..num_vars {
-                    let var_name = content_iter.next().unwrap();
+                    content_iter.next();
                     variables.push("Real");
                 }
             }
@@ -128,8 +126,9 @@ fn main() -> io::Result<()> {
                 }
             }
             "CON" => {
-                num_cons = content_iter.next().unwrap().parse::<usize>().unwrap();
-                num_bcons = content_iter.next().unwrap().parse::<usize>().unwrap();
+                let num_cons = content_iter.next().unwrap().parse::<usize>().unwrap();
+                content_iter.next();
+                // num_bcons = content_iter.next().unwrap().parse::<usize>().unwrap();
                 for i in 0..num_cons {
                     parse_cons(&mut content_iter, &mut constraints, &fout, i, &obj_func)?;
                 }
@@ -145,7 +144,7 @@ fn main() -> io::Result<()> {
                     if (obj_func.sense == "min" && lb == "-inf")
                         || (obj_func.sense == "max" && ub == "inf")
                     {
-                        println!("error in rtp");
+                        eprintln!("error in rtp");
                         exit(0);
                     }
                 }
@@ -153,7 +152,7 @@ fn main() -> io::Result<()> {
             "SOL" => {
                 let num_sol = content_iter.next().unwrap().parse::<usize>().unwrap();
                 if (num_sol == 0 && infease == false) || (num_sol > 0 && infease == true) {
-                    println!("error in sol");
+                    eprintln!("error in sol");
                     exit(0);
                 }
                 for sol_ind in 0..num_sol {
@@ -300,7 +299,7 @@ fn main() -> io::Result<()> {
                             for (used_con_term, used_con_set) in coe_map.iter() {
                                 rea_coe.insert(*used_con_term);
                                 if used_con_set.len() <= 0 {
-                                    println!("error in lin or rnd");
+                                    eprintln!("error in lin or rnd");
                                     exit(0);
                                 }
                                 writeln!(
@@ -423,7 +422,7 @@ fn main() -> io::Result<()> {
                             let i2 = content_iter.next().unwrap().parse::<usize>().unwrap();
                             let l2 = content_iter.next().unwrap().parse::<usize>().unwrap();
                             if !asm_set.contains(&l1) || !asm_set.contains(&l2) {
-                                println!("error in uns");
+                                eprintln!("error in uns");
                                 exit(0);
                             }
                             let mut new_used_asm_set = HashSet::new();
@@ -499,7 +498,7 @@ fn main() -> io::Result<()> {
                             }
                         }
                         _ => {
-                            println!("error in der");
+                            eprintln!("error in der");
                             exit(0);
                         }
                     }
