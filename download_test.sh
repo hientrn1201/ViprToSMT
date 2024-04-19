@@ -118,6 +118,12 @@ FILES=(
 "x01.vipr.gz"
 )
 
+# Create the subfolder if it doesn't exist
+mkdir -p tests
+
+# Change directory to the subfolder
+cd tests || exit
+
 # Loop through each file name and curl it
 for FILE in "${FILES[@]}"
 do
