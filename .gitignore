@@ -16,3 +16,5 @@ Cargo.lock
 .smt2
 .DS_Store
 .vipr
+
+test/

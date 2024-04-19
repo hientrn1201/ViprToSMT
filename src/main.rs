@@ -68,8 +68,13 @@ fn main() -> io::Result<()> {
     // map con_ind to used asm
     let mut used_asm = HashMap::<usize, HashSet<usize>>::new();
 
+    // used constraints index set for the current block of derived constraints
     let mut used_dep = HashSet::<usize>::new();
+
+    // used intx index set for the current block of derived constraints
     let mut used_intx = HashSet::<usize>::new();
+
+    // flag to check if the objective function has been used in the the current block of derived constraints
     let mut is_used_obj = false;
 
     // Read the entire file content into a string
@@ -99,8 +104,8 @@ fn main() -> io::Result<()> {
 
     while let Some(string) = content_iter.next() {
         match string {
+            // process VAR & INT section to get the type of variables
             "VAR" => {
-                println!("VAR");
                 let num_vars = content_iter.next().unwrap().parse::<usize>().unwrap();
                 for _ in 0..num_vars {
                     content_iter.next();
@@ -108,15 +113,15 @@ fn main() -> io::Result<()> {
                 }
             }
             "INT" => {
-                println!("INT");
                 let num_ints = content_iter.next().unwrap().parse::<usize>().unwrap();
                 for _ in 0..num_ints {
                     let int_index = content_iter.next().unwrap().parse::<usize>().unwrap();
                     variables[int_index] = "Int";
                 }
             }
+
+            // process OBJ section to get the objective function
             "OBJ" => {
-                println!("OBJ");
                 let objsense = content_iter.next().unwrap();
                 let num_objterms = content_iter.next().unwrap().parse::<usize>().unwrap();
                 obj_func.sense = objsense.to_string();
@@ -126,8 +131,10 @@ fn main() -> io::Result<()> {
                     obj_func.terms.insert(var_index, var_coeff);
                 }
             }
+
+            // process CON section to get the constraints
+            // store constraints in a hashmap "constraints" with the index as the key
             "CON" => {
-                println!("CON");
                 let num_cons = content_iter.next().unwrap().parse::<usize>().unwrap();
                 content_iter.next();
                 // num_bcons = content_iter.next().unwrap().parse::<usize>().unwrap();
@@ -135,8 +142,10 @@ fn main() -> io::Result<()> {
                     parse_cons(&mut content_iter, &mut constraints, i, &obj_func)?;
                 }
             }
+
+            // process RTP section to get the lower and upper bounds of the objective function
+            // and check if the problem is infeasible
             "RTP" => {
-                println!("RTP");
                 let s = content_iter.next().unwrap();
                 if s == "infeas" {
                     infease = true;
@@ -152,8 +161,9 @@ fn main() -> io::Result<()> {
                     }
                 }
             }
+
+            // process SOL section to get the solutions if any
             "SOL" => {
-                println!("SOL");
                 let num_sol = content_iter.next().unwrap().parse::<usize>().unwrap();
                 if (num_sol == 0 && infease == false) || (num_sol > 0 && infease == true) {
                     eprintln!("error in sol");
@@ -276,8 +286,9 @@ fn main() -> io::Result<()> {
                     count += 1;
                 }
             }
+
+            // process DER section to get the derived constraints based on batch processing
             "DER" => {
-                println!("DER");
                 fout = fout_open(&outfile)?;
                 let num_der = content_iter.next().unwrap().parse::<usize>().unwrap();
                 let cons_len = constraints.len();
@@ -308,6 +319,8 @@ fn main() -> io::Result<()> {
                     content_iter.next();
                     let reason = content_iter.next().unwrap();
                     match reason {
+                        // if the reason is asm, add the constraint to the used_asm set
+                        // and clean up the constraints that are no longer needed
                         "asm" => {
                             used_asm.insert(der_ind, HashSet::from([der_ind]));
                             asm_set.insert(der_ind);
@@ -315,6 +328,7 @@ fn main() -> io::Result<()> {
                             content_iter.next();
                             clean_up_cons(&delete_cons, &der_ind, &mut constraints)?;
                         }
+
                         "lin" | "rnd" => {
                             let mut rea_coe = HashSet::<usize>::new();
                             let mut used_cons = HashMap::<usize, String>::new();
