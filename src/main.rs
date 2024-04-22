@@ -31,7 +31,7 @@ struct Args {
 }
 
 #[derive(Debug)]
-struct Relation {
+pub struct Relation {
     sense: String,
     terms: HashMap<usize, String>,
     rhs: String,
