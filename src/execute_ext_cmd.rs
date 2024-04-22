@@ -27,7 +27,6 @@ pub fn check(filename: &str, count: usize) -> io::Result<()> {
     let output = execute_cmd("cvc5", vec![filename]);
     match output {
         Ok(output) => {
-            println!("Output: {}", output);
             if output.trim() != SAT {
                 return Err(io::Error::new(
                     io::ErrorKind::Other,
