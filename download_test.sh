@@ -29,10 +29,6 @@ FILES=(
 "bienst1.vipr.gz"
 "bienst2.vipr.gz"
 "blend2.vipr.gz"
-"bzfgleix.easyex.28_markshare1_1.scip-3.0.0.linux.x86_64.gnu.opt.cpx.M630.ps_exlp.vipr.gz"
-"bzfgleix.easyex.28_markshare1_1.scip-3.0.0.linux.x86_64.gnu.opt.cpx.M630.ps_exlp.viprraw.gz"
-"bzfgleix.numdiffex.19_ilp_sh5.scip-3.0.0.linux.x86_64.gnu.opt.cpx.M630.ps_exlp.vipr.gz"
-"bzfgleix.numdiffex.19_ilp_sh5.scip-3.0.0.linux.x86_64.gnu.opt.cpx.M630.ps_exlp.viprraw.gz"
 "cnr_dual_mip1.vipr.gz"
 "cnr_heur_mip1.vipr.gz"
 "dano3_3.vipr.gz"
@@ -133,3 +129,5 @@ do
     # Curl the file and save it with the same name
     curl -sLO "$FULL_URL"
 done
+
+gzip -d *.vipr.gz

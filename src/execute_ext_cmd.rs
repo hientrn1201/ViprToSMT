@@ -23,14 +23,14 @@ const SAT: &str = "sat";
 ///
 /// * If the output from CVC5 is unexpected.
 /// * If there's an error removing the file after checking.
-pub fn check(filename: &str, count: usize) -> io::Result<()> {
-    let output = execute_cmd("cvc5", vec![filename]);
+pub fn check(filename: &str, count: usize, software: &str) -> io::Result<()> {
+    let output = execute_cmd(software, vec![filename]);
     match output {
         Ok(output) => {
             if output.trim() != SAT {
                 return Err(io::Error::new(
                     io::ErrorKind::Other,
-                    "Unexpected output from cvc5",
+                    format!("Unexpected output from {}", software),
                 ));
             }
 
@@ -87,7 +87,7 @@ fn execute_cmd(program: &str, args: Vec<&str>) -> io::Result<String> {
     if !output.status.success() {
         return Err(io::Error::new(
             io::ErrorKind::Other,
-            format!("Command failed with {:?}", output.status.code().unwrap()),
+            format!("Command failed with status code {:?}", output.status.code().unwrap()),
         ));
     }
     let stdout = String::from_utf8(output.stdout).unwrap();

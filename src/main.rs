@@ -28,6 +28,10 @@ struct Args {
     /// Maximum derived constraints per check size
     #[clap(short, long, default_value_t = usize::MAX)]
     max_block_size: usize,
+
+    /// Software used to check
+    #[clap(short, long)]
+    software: String,    
 }
 
 #[derive(Debug)]
@@ -95,6 +99,8 @@ fn main() -> io::Result<()> {
     let mut cur_block_size = 0;
 
     let max_block_size = args.max_block_size;
+
+    let software = args.software;
 
     let mut count = 0;
 
@@ -224,7 +230,7 @@ fn main() -> io::Result<()> {
                         )?;
                     }
                     fout_close(&fout)?;
-                    check(&outfile, count)?;
+                    check(&outfile, count, &software)?;
                     count += 1;
                 }
                 // assert objective function,
@@ -282,7 +288,7 @@ fn main() -> io::Result<()> {
                             .join(" ")
                     )?;
                     fout_close(&fout)?;
-                    check(&outfile, count)?;
+                    check(&outfile, count, &software)?;
                     count += 1;
                 }
             }
@@ -552,7 +558,7 @@ fn main() -> io::Result<()> {
                             }
                             dom_cons(
                                 &constraints
-                                    .get(&i2)
+                                    .get(&i1)
                                     .unwrap()
                                     .terms
                                     .keys()
@@ -649,7 +655,7 @@ fn main() -> io::Result<()> {
                     cur_block_size += 1;
                     if cur_block_size == max_block_size {
                         fout_close(&fout)?;
-                        check(&outfile, count)?;
+                        check(&outfile, count, &software)?;
                         count += 1;
                         fout = fout_open(&outfile)?;
                         cur_block_size = 0;
@@ -667,7 +673,7 @@ fn main() -> io::Result<()> {
 
     fout = File::options().write(true).append(true).open(&outfile)?;
     fout_close(&fout)?;
-    check(&outfile, count)?;
+    check(&outfile, count, &software)?;
     println!("{} is valid.", filename);
     println!("Time elapsed: {:?}s", start.elapsed().as_secs_f64());
     Ok(())
