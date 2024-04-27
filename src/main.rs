@@ -52,8 +52,15 @@ fn main() -> io::Result<()> {
 
     let mut fout: File;
 
-    let mut variables = Vec::new();
-    let mut constraints = HashMap::new();
+    // store the type of variables
+    let mut variables = Vec::new(); 
+
+    // store the constraints corresponding to the index
+    let mut constraints = HashMap::new(); 
+
+    // store the indices of terms of the constraints corresponding to the index
+    let mut constraints_terms = HashMap::new(); 
+
     let mut obj_func: Relation = Relation {
         sense: "".to_string(),
         terms: HashMap::new(),
@@ -145,7 +152,7 @@ fn main() -> io::Result<()> {
                 content_iter.next();
                 // num_bcons = content_iter.next().unwrap().parse::<usize>().unwrap();
                 for i in 0..num_cons {
-                    parse_cons(&mut content_iter, &mut constraints, i, &obj_func)?;
+                    parse_cons(&mut content_iter, &mut constraints, &mut constraints_terms, i, &obj_func)?;
                 }
             }
 
@@ -299,18 +306,12 @@ fn main() -> io::Result<()> {
                 let num_der = content_iter.next().unwrap().parse::<usize>().unwrap();
                 let cons_len = constraints.len();
                 for der_ind in (0 + cons_len)..(num_der + cons_len) {
-                    parse_cons(&mut content_iter, &mut constraints, der_ind, &obj_func)?;
+                    parse_cons(&mut content_iter, &mut constraints, &mut constraints_terms, der_ind, &obj_func)?;
                     used_dep.insert(der_ind);
                     add_dep(der_ind, &constraints, &fout)?;
                     if der_ind == num_der + cons_len - 1 {
                         handle_last_cons(
-                            &constraints
-                                .get(&der_ind)
-                                .unwrap()
-                                .terms
-                                .keys()
-                                .cloned()
-                                .collect(),
+                            &constraints_terms.get(&der_ind).unwrap(),
                             &obj_func.terms,
                             &der_ind,
                             obj_func.sense.clone(),
@@ -332,7 +333,7 @@ fn main() -> io::Result<()> {
                             asm_set.insert(der_ind);
                             content_iter.next();
                             content_iter.next();
-                            clean_up_cons(&delete_cons, &der_ind, &mut constraints)?;
+                            clean_up_cons(&delete_cons, &der_ind, &mut constraints, &mut constraints_terms)?;
                         }
 
                         "lin" | "rnd" => {
@@ -507,13 +508,7 @@ fn main() -> io::Result<()> {
                                 format!("rs{}", der_ind),
                                 format!("{}{}", beta, der_ind),
                                 format!("r{}x", der_ind),
-                                &constraints
-                                    .get(&der_ind)
-                                    .unwrap()
-                                    .terms
-                                    .keys()
-                                    .cloned()
-                                    .collect(),
+                                &constraints_terms.get(&der_ind).unwrap(),
                                 format!("cs{}", der_ind),
                                 format!("crhs{}", der_ind),
                                 format!("c{}x", der_ind),
@@ -526,7 +521,7 @@ fn main() -> io::Result<()> {
                                 .entry(last_used)
                                 .or_insert(Vec::new())
                                 .push(der_ind);
-                            clean_up_cons(&delete_cons, &der_ind, &mut constraints)?;
+                            clean_up_cons(&delete_cons, &der_ind, &mut constraints, &mut constraints_terms)?;
                         }
                         "uns" => {
                             let i1 = content_iter.next().unwrap().parse::<usize>().unwrap();
@@ -557,46 +552,22 @@ fn main() -> io::Result<()> {
                                 writeln!(&mut fout, "(assert (< {}.0 {}.0))", i, der_ind)?;
                             }
                             dom_cons(
-                                &constraints
-                                    .get(&i1)
-                                    .unwrap()
-                                    .terms
-                                    .keys()
-                                    .cloned()
-                                    .collect(),
+                                &constraints_terms.get(&i1).unwrap(),
                                 format!("cs{}", i1),
                                 format!("crhs{}", i1),
                                 format!("c{}x", i1),
-                                &constraints
-                                    .get(&der_ind)
-                                    .unwrap()
-                                    .terms
-                                    .keys()
-                                    .cloned()
-                                    .collect(),
+                                &constraints_terms.get(&der_ind).unwrap(),
                                 format!("cs{}", der_ind),
                                 format!("crhs{}", der_ind),
                                 format!("c{}x", der_ind),
                                 &fout,
                             )?;
                             dom_cons(
-                                &constraints
-                                    .get(&i2)
-                                    .unwrap()
-                                    .terms
-                                    .keys()
-                                    .cloned()
-                                    .collect(),
+                                &constraints_terms.get(&i2).unwrap(),
                                 format!("cs{}", i2),
                                 format!("crhs{}", i2),
                                 format!("c{}x", i2),
-                                &constraints
-                                    .get(&der_ind)
-                                    .unwrap()
-                                    .terms
-                                    .keys()
-                                    .cloned()
-                                    .collect(),
+                                &constraints_terms.get(&der_ind).unwrap(),
                                 format!("cs{}", der_ind),
                                 format!("crhs{}", der_ind),
                                 format!("c{}x", der_ind),
@@ -644,7 +615,7 @@ fn main() -> io::Result<()> {
                                     .entry(last_used as usize)
                                     .or_insert(Vec::new())
                                     .push(der_ind);
-                                clean_up_cons(&delete_cons, &der_ind, &mut constraints)?;
+                                clean_up_cons(&delete_cons, &der_ind, &mut constraints, &mut constraints_terms)?;
                             }
                         }
                         _ => {

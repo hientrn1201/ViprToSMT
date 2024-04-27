@@ -21,6 +21,7 @@ pub fn clean_up_cons(
     delete_cons: &HashMap<usize, Vec<usize>>,
     index: &usize,
     constraints: &mut HashMap<usize, Relation>,
+    constraints_terms: &mut HashMap<usize, HashSet<usize>>
 ) -> io::Result<()> {
     if index < &0 {
         return Ok(());
@@ -28,6 +29,7 @@ pub fn clean_up_cons(
     if let Some(cons_to_delete) = delete_cons.get(index) {
         for cons_ind in cons_to_delete {
             constraints.remove(cons_ind);
+            constraints_terms.remove(cons_ind);
         }
     }
     Ok(())
@@ -199,6 +201,7 @@ pub fn dom_cons(
 pub fn parse_cons(
     content_iter: &mut std::vec::IntoIter<&str>,
     constraints: &mut HashMap<usize, Relation>,
+    constraints_terms: &mut HashMap<usize, HashSet<usize>>,
     i: usize,
     obj_func: &Relation,
 ) -> io::Result<()> {
@@ -222,7 +225,9 @@ pub fn parse_cons(
             cons.terms.insert(var_index, var_coeff);
         }
     }
+    let cloned_terms = cons.terms.keys().cloned().collect(); // Clone the terms
     constraints.insert(i, cons);
+    constraints_terms.insert(i, cloned_terms); // Use the cloned terms
     Ok(())
 }
 
