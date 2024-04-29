@@ -59,7 +59,7 @@ If you want to do test your own problems, please refer to [SCIP-extension](https
 Once you get your .vipr file, you can run the following command
 
 ```
-cargo -- -f <file_path> -m <block_size> -s <software>
+cargo run -- -f <file_path> -m <block_size> -s <software>
 ```
 
 where
