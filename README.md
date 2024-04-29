@@ -35,7 +35,7 @@ For this program to run, please install
 - [Rust](https://www.rust-lang.org/tools/install)
 - Any SMT solver software, e.g. [cvc5](https://cvc5.github.io/docs/cvc5-1.0.0/installation/installation.html), [z3](https://github.com/Z3Prover/z3), [cvc4](https://cvc4.github.io/downloads.html)
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- USAGE EXAMPLES -->
 
@@ -68,4 +68,4 @@ where
 - `block_size` is the number of derived constraints to be checked each time
 - `software` is the SMT solver software of your choice
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#top">back to top</a>)</p>
